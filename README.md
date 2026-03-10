@@ -1,8 +1,8 @@
-# Multi-model Inference Engine with vLLM deployed on Linode LKE
+# 🚀 Multi-model Inference Engine with vLLM deployed on Linode LKE
 
 This repository contains Kubernetes manifests for deploying vLLM (a high-throughput and memory-efficient inference engine for large language models) on a Linode LKE cluster with support for multiple model variants.
 
-## Architecture
+## 🏗️ Architecture
 
 ### Multi-Model Setup (Recommended)
 - **Nginx Router**: Intelligent routing based on model selection
@@ -12,7 +12,7 @@ This repository contains Kubernetes manifests for deploying vLLM (a high-through
 - **Storage**: PersistentVolumeClaim for Hugging Face model cache
 - **GPU**: Multi-GPU support with automatic routing
 
-## Files
+## 📁 Files
 
 ### Core Files
 - `pvc.yaml` - PersistentVolumeClaim for model cache
@@ -28,7 +28,7 @@ This repository contains Kubernetes manifests for deploying vLLM (a high-through
 - `nginx-router-config.yaml` - Nginx routing configuration
 - `nginx-router-deployment.yaml` - Nginx router + LoadBalancer service
 
-## Features
+## ✨ Features
 
 - ✅ Multiple model support with intelligent routing
 - ✅ Automatic request routing based on model parameter
@@ -39,7 +39,7 @@ This repository contains Kubernetes manifests for deploying vLLM (a high-through
 - ✅ OpenAI-compatible API
 - ✅ Tensor parallelism support for large models
 
-## Deployment
+## ⚙️ Deployment
 
 ### Option 1: Multi-Model Setup (Recommended)
 
@@ -79,7 +79,7 @@ kubectl get pods -o wide
 kubectl get services
 ```
 
-## Usage
+## 🧑‍💼 Usage
 
 ### Multi-Model Setup
 
@@ -149,14 +149,14 @@ response = client.chat.completions.create(
 print(response.choices[0].message.content)
 ```
 
-## Requirements
+## 📋 Requirements
 
 - Kubernetes cluster with multi-GPU nodes (NVIDIA)
 - Linode LKE or similar
 - kubectl configured
 - For 70B model: Minimum 2 GPUs (with tensor parallelism)
 
-## Model Specifications
+## 🧠 Model Specifications
 
 ### Meta-Llama-3-8B-Instruct
 - GPU: 1x NVIDIA GPU
@@ -172,7 +172,7 @@ print(response.choices[0].message.content)
 - Max Context Length: 8192 tokens
 - Typical Response Time: 200-800ms
 
-## Scaling
+## 📈 Scaling
 
 ### Add More Model Variants
 
@@ -189,7 +189,7 @@ To enable HPA for individual models:
 kubectl autoscale deployment vllm-8b --min=1 --max=3 --cpu-percent=80
 ```
 
-## Troubleshooting
+## 🔧 Troubleshooting
 
 ### Check Router Status
 ```bash
@@ -209,7 +209,7 @@ kubectl exec -it <router-pod> -- curl http://vllm-8b-service:8000/health
 kubectl exec -it <router-pod> -- curl http://vllm-70b-service:8000/health
 ```
 
-## Future Enhancements
+## 🚧 Future Enhancements
 
 - [ ] More model variants (Mistral, Qwen, etc.)
 - [ ] Auto-scaling (HPA) per model

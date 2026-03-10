@@ -1,4 +1,4 @@
-# vLLM Kubernetes Deployment with Multi-Model Support
+# Multi-model Inference Engine with vLLM deployed on Linode LKE
 
 This repository contains Kubernetes manifests for deploying vLLM (a high-throughput and memory-efficient inference engine for large language models) on a Linode LKE cluster with support for multiple model variants.
 

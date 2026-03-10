@@ -16,7 +16,6 @@ This repository contains Kubernetes manifests for deploying vLLM (a high-through
 
 ### Core Files
 - `pvc.yaml` - PersistentVolumeClaim for model cache
-- `gpu-test.yaml` - GPU verification job
 
 ### Single Model (Legacy)
 - `vllm-deployment.yaml` - Original single model deployment
@@ -47,7 +46,6 @@ This repository contains Kubernetes manifests for deploying vLLM (a high-through
 ```bash
 # Deploy storage and core infrastructure
 kubectl apply -f pvc.yaml
-kubectl apply -f gpu-test.yaml
 
 # Deploy model services
 kubectl apply -f vllm-model-services.yaml

@@ -36,6 +36,18 @@ data:
         server vllm-70b-service:8000;
       }
 
+      upstream vllm_mistral {
+        server vllm-mistral-service:8000;
+      }
+
+      upstream vllm_qwen {
+        server vllm-qwen-service:8000;
+      }
+
+      upstream vllm_codellama {
+        server vllm-codellama-service:8000;
+      }
+
       # Main server block
       server {
         listen 80;
@@ -62,6 +74,21 @@ data:
           if ($request_body ~* "70b|70B") {
             proxy_pass http://vllm_70b;
           }
+
+          # Route to Mistral if model name contains "mistral"
+          if ($request_body ~* "mistral") {
+            proxy_pass http://vllm_mistral;
+          }
+
+          # Route to Qwen if model name contains "qwen"
+          if ($request_body ~* "qwen") {
+            proxy_pass http://vllm_qwen;
+          }
+
+          # Route to CodeLlama if model name contains "code"
+          if ($request_body ~* "code") {
+            proxy_pass http://vllm_codellama;
+          }
         }
 
         location /v1/completions {
@@ -77,6 +104,21 @@ data:
           if ($request_body ~* "70b|70B") {
             proxy_pass http://vllm_70b;
           }
+
+          # Route to Mistral if model name contains "mistral"
+          if ($request_body ~* "mistral") {
+            proxy_pass http://vllm_mistral;
+          }
+
+          # Route to Qwen if model name contains "qwen"
+          if ($request_body ~* "qwen") {
+            proxy_pass http://vllm_qwen;
+          }
+
+          # Route to CodeLlama if model name contains "code"
+          if ($request_body ~* "code") {
+            proxy_pass http://vllm_codellama;
+          }
         }
 
         # Health endpoint for vLLM services
@@ -87,6 +129,21 @@ data:
 
         location /health/70b {
           proxy_pass http://vllm_70b/health;
+          access_log off;
+        }
+
+        location /health/mistral {
+          proxy_pass http://vllm_mistral/health;
+          access_log off;
+        }
+
+        location /health/qwen {
+          proxy_pass http://vllm_qwen/health;
+          access_log off;
+        }
+
+        location /health/codellama {
+          proxy_pass http://vllm_codellama/health;
           access_log off;
         }
 

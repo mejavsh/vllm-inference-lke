@@ -25,3 +25,45 @@ spec:
   - protocol: TCP
     port: 8000
     targetPort: 8000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vllm-mistral-service
+spec:
+  type: ClusterIP
+  selector:
+    app: vllm
+    model: mistral
+  ports:
+  - protocol: TCP
+    port: 8000
+    targetPort: 8000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vllm-qwen-service
+spec:
+  type: ClusterIP
+  selector:
+    app: vllm
+    model: qwen
+  ports:
+  - protocol: TCP
+    port: 8000
+    targetPort: 8000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vllm-codellama-service
+spec:
+  type: ClusterIP
+  selector:
+    app: vllm
+    model: codellama
+  ports:
+  - protocol: TCP
+    port: 8000
+    targetPort: 8000

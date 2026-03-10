@@ -23,8 +23,11 @@ This repository contains Kubernetes manifests for deploying vLLM (a high-through
 
 ### Multi-Model Setup
 - `vllm-8b-deployment.yaml` - 8B model deployment
-- `vllm-70b-deployment.yaml` - 70B model deployment  
-- `vllm-model-services.yaml` - ClusterIP services for models
+- `vllm-70b-deployment.yaml` - 70B model deployment
+- `vllm-mistral-deployment.yaml` - Mistral-7B deployment
+- `vllm-qwen-deployment.yaml` - Qwen-7B deployment
+- `vllm-codellama-deployment.yaml` - CodeLlama-7B deployment
+- `vllm-model-services.yaml` - ClusterIP services for all models
 - `nginx-router-config.yaml` - Nginx routing configuration
 - `nginx-router-deployment.yaml` - Nginx router + LoadBalancer service
 
@@ -112,6 +115,39 @@ curl http://<EXTERNAL-IP>/v1/chat/completions \
   }'
 ```
 
+**Request Mistral Model:**
+```bash
+curl http://<EXTERNAL-IP>/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "mistralai/Mistral-7B-Instruct-v0.1",
+    "messages": [{"role": "user", "content": "What is AI?"}],
+    "max_tokens": 100
+  }'
+```
+
+**Request Qwen Model:**
+```bash
+curl http://<EXTERNAL-IP>/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "Qwen/Qwen1.5-7B-Chat",
+    "messages": [{"role": "user", "content": "What is AI?"}],
+    "max_tokens": 100
+  }'
+```
+
+**Request CodeLlama Model:**
+```bash
+curl http://<EXTERNAL-IP>/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "meta-llama/CodeLlama-7b-Instruct-hf",
+    "messages": [{"role": "user", "content": "Write a Python function to calculate factorial"}],
+    "max_tokens": 200
+  }'
+```
+
 **Health Checks:**
 ```bash
 # Overall health
@@ -158,19 +194,67 @@ print(response.choices[0].message.content)
 
 ## 🧠 Model Specifications
 
-### Meta-Llama-3-8B-Instruct
+### Available Models
+
+#### Meta-Llama-3-8B-Instruct
 - GPU: 1x NVIDIA GPU
 - GPU Memory: ~16GB
 - Memory Utilization: 95%
 - Max Context Length: 4096 tokens
 - Typical Response Time: 50-200ms
+- Model Type: Instruction-tuned LLM
+- Use Case: General purpose conversations, question answering
 
-### Meta-Llama-3-70B-Instruct
+#### Meta-Llama-3-70B-Instruct
 - GPU: 2x NVIDIA GPU (tensor parallel)
 - GPU Memory: ~80GB (40GB per GPU)
 - Memory Utilization: 90%
 - Max Context Length: 8192 tokens
 - Typical Response Time: 200-800ms
+- Model Type: Instruction-tuned LLM
+- Use Case: Complex reasoning, long-form generation
+
+#### Mistral-7B-Instruct
+- GPU: 1x NVIDIA GPU
+- GPU Memory: ~16GB
+- Memory Utilization: 95%
+- Max Context Length: 8192 tokens
+- Typical Response Time: 50-200ms
+- Model Type: Instruction-tuned LLM
+- Use Case: Fast inference, efficient reasoning
+
+#### Qwen-7B-Chat
+- GPU: 1x NVIDIA GPU
+- GPU Memory: ~16GB
+- Memory Utilization: 95%
+- Max Context Length: 8192 tokens
+- Typical Response Time: 50-200ms
+- Model Type: Multilingual LLM
+- Use Case: Chinese/English conversations, multilingual support
+
+#### CodeLlama-7B-Instruct
+- GPU: 1x NVIDIA GPU
+- GPU Memory: ~16GB
+- Memory Utilization: 95%
+- Max Context Length: 8192 tokens
+- Typical Response Time: 50-200ms
+- Model Type: Code-specialized LLM
+- Use Case: Code generation, code completion, technical QA
+
+### Model Selection Logic
+
+The router automatically routes requests based on the model name in your API request:
+
+```
+Model Name Contains     Routes To
+─────────────────────────────────
+"llama-3-8b"           → vllm-8b
+"70b" or "70B"         → vllm-70b
+"mistral"              → vllm-mistral
+"qwen"                 → vllm-qwen
+"code"                 → vllm-codellama
+(default)              → vllm-8b
+```
 
 ## 📈 Scaling
 

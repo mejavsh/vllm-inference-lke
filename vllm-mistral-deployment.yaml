@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vllm-mistral
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vllm
+      model: mistral
+  template:
+    metadata:
+      labels:
+        app: vllm
+        model: mistral
+    spec:
+      containers:
+      - name: vllm
+        image: vllm/vllm-openai:latest
+        
+        env:
+        - name: HUGGING_FACE_HUB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: hf-token
+              key: HF_TOKEN
+
+        args:
+          - "--model"
+          - "mistralai/Mistral-7B-Instruct-v0.1"
+          - "--gpu-memory-utilization"
+          - "0.95"
+          - "--max-model-len"
+          - "8192"
+          - "--port"
+          - "8000"
+
+        ports:
+          - containerPort: 8000
+
+        volumeMounts:
+        - mountPath: /root/.cache/huggingface
+          name: hf-cache
+
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 60
+          periodSeconds: 10
+
+        resources:
+          limits:
+            nvidia.com/gpu: 1
+
+      volumes:
+      - name: hf-cache
+        persistentVolumeClaim:
+          claimName: hf-cache

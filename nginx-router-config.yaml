@@ -1,0 +1,102 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-router-config
+data:
+  nginx.conf: |
+    user nginx;
+    worker_processes auto;
+    error_log /var/log/nginx/error.log warn;
+    pid /var/run/nginx.pid;
+
+    events {
+      worker_connections 1024;
+    }
+
+    http {
+      default_type application/octet-stream;
+
+      log_format main '$remote_addr - $remote_user [$time_local] "$request" '
+                      '$status $body_bytes_sent "$http_referer" '
+                      '"$http_user_agent" "$http_x_forwarded_for"';
+
+      access_log /var/log/nginx/access.log main;
+
+      sendfile on;
+      tcp_nopush on;
+      tcp_nodelay on;
+      keepalive_timeout 65;
+
+      # Upstream definitions for model-specific vLLM services
+      upstream vllm_8b {
+        server vllm-8b-service:8000;
+      }
+
+      upstream vllm_70b {
+        server vllm-70b-service:8000;
+      }
+
+      # Main server block
+      server {
+        listen 80;
+        server_name _;
+
+        # Health check endpoint
+        location /health {
+          access_log off;
+          return 200 "healthy\n";
+          add_header Content-Type text/plain;
+        }
+
+        # Route based on model parameter in request body
+        location /v1/chat/completions {
+          proxy_pass http://vllm_8b;
+          proxy_set_header Host $host;
+          proxy_set_header X-Real-IP $remote_addr;
+          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+          proxy_set_header X-Forwarded-Proto $scheme;
+          proxy_read_timeout 300s;
+          proxy_connect_timeout 60s;
+
+          # Route to 70B if model name contains "70b"
+          if ($request_body ~* "70b|70B") {
+            proxy_pass http://vllm_70b;
+          }
+        }
+
+        location /v1/completions {
+          proxy_pass http://vllm_8b;
+          proxy_set_header Host $host;
+          proxy_set_header X-Real-IP $remote_addr;
+          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+          proxy_set_header X-Forwarded-Proto $scheme;
+          proxy_read_timeout 300s;
+          proxy_connect_timeout 60s;
+
+          # Route to 70B if model name contains "70b"
+          if ($request_body ~* "70b|70B") {
+            proxy_pass http://vllm_70b;
+          }
+        }
+
+        # Health endpoint for vLLM services
+        location /health/8b {
+          proxy_pass http://vllm_8b/health;
+          access_log off;
+        }
+
+        location /health/70b {
+          proxy_pass http://vllm_70b/health;
+          access_log off;
+        }
+
+        # Catch all other endpoints and route to 8B by default
+        location / {
+          proxy_pass http://vllm_8b;
+          proxy_set_header Host $host;
+          proxy_set_header X-Real-IP $remote_addr;
+          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+          proxy_set_header X-Forwarded-Proto $scheme;
+        }
+      }
+    }

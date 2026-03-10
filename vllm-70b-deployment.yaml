@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vllm-70b
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vllm
+      model: 70b
+  template:
+    metadata:
+      labels:
+        app: vllm
+        model: 70b
+    spec:
+      containers:
+      - name: vllm
+        image: vllm/vllm-openai:latest
+        
+        env:
+        - name: HUGGING_FACE_HUB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: hf-token
+              key: HF_TOKEN
+
+        args:
+          - "--model"
+          - "meta-llama/Meta-Llama-3-70B-Instruct"
+          - "--gpu-memory-utilization"
+          - "0.90"
+          - "--max-model-len"
+          - "8192"
+          - "--port"
+          - "8000"
+          - "--tensor-parallel-size"
+          - "2"
+
+        ports:
+          - containerPort: 8000
+
+        volumeMounts:
+        - mountPath: /root/.cache/huggingface
+          name: hf-cache
+
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 90
+          periodSeconds: 10
+
+        resources:
+          limits:
+            nvidia.com/gpu: 2
+
+      volumes:
+      - name: hf-cache
+        persistentVolumeClaim:
+          claimName: hf-cache
